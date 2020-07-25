@@ -1,8 +1,8 @@
 import { Browser } from "puppeteer";
 import HomeInformation from "src/contracts/HomeInformation";
 import HomeFetcher from 'src/contracts/HomeFetcher';
-import Status from "src/constants/Status";
-import Realtor from "src/constants/Realtor";
+import Status from "src/enums/Status";
+import Realtor from "src/enums/Realtor";
 
 export default class WoongoedMakelaarsFetcher implements HomeFetcher {
     async homes(browser: Browser): Promise<Array<HomeInformation>> {

@@ -1,5 +1,5 @@
-import Status from "src/constants/Status";
-import Realtor from "src/constants/Realtor";
+import Status from "src/enums/Status";
+import Realtor from "src/enums/Realtor";
 
 export default interface HomeInformation {
     address: string;
