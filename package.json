@@ -10,8 +10,13 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@types/node": "^14.0.24",
-    "puppeteer": "^5.2.1"
+    "@types/puppeteer": "^3.0.1"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "puppeteer": "^5.2.1",
+    "twilio": "^3.48.1"
   }
 }
