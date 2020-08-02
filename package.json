@@ -15,6 +15,9 @@
     "@types/puppeteer": "^3.0.1"
   },
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.1.4",
+    "@types/async-redis": "^1.1.1",
+    "async-redis": "^1.1.7",
     "dotenv": "^8.2.0",
     "puppeteer": "^5.2.1",
     "twilio": "^3.48.1"
