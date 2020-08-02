@@ -1,4 +1,4 @@
-const enum Status {
+const enum StatusType {
     Sold = 'Sold',
     Unknown = 'Unknown',
     Available = 'Available',
@@ -6,4 +6,4 @@ const enum Status {
     SoldWithReservation = 'SoldWithReservation',
 };
 
-export default Status;
+export default StatusType;
