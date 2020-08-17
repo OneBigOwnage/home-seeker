@@ -1,9 +1,9 @@
 const enum StatusType {
+    Available = 'Available',
+    BeingNegotiated = 'BeingNegotiated',
+    SoldWithReservation = 'SoldWithReservation',
     Sold = 'Sold',
     Unknown = 'Unknown',
-    Available = 'Available',
-    UnderOffer = 'UnderOffer',
-    SoldWithReservation = 'SoldWithReservation',
 };
 
 export default StatusType;
