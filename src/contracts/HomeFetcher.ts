@@ -1,6 +1,6 @@
 import { Browser } from "puppeteer";
-import HomeInformation from "./HomeInformation";
+import { Home } from "./HomeInformation";
 
 export default interface HomeFetcher {
-    homes(browser: Browser): Promise<Array<HomeInformation>>;
+    homes(browser: Browser): Promise<Array<Home>>;
 }
