@@ -1,14 +1,6 @@
 import StatusType from "src/enums/StatusType";
 import Realtor from "src/enums/Realtor";
 
-export default interface LegacyHomeInformation {
-    address: string;
-    price: string;
-    status: StatusType;
-    url: string;
-    realtor: Realtor;
-}
-
 export interface Address {
     googlePlaceID: string;
     street: string;
@@ -17,13 +9,13 @@ export interface Address {
     zipcode: string;
 }
 
-interface Status {
+export interface Status {
     startDate: Date | null;
     endDate: Date | null;
     type: StatusType;
 }
 
-interface RealtorObject {
+export interface RealtorObject {
     price: number;
     status: StatusType;
     url: string;
@@ -32,7 +24,7 @@ interface RealtorObject {
 }
 
 
-export class Home implements Address, RealtorObject {
+export default class Home implements Address, RealtorObject {
     googlePlaceID: string;
     street: string;
     number: string;
