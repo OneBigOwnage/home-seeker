@@ -1,30 +1,59 @@
 import { Browser } from "puppeteer";
-import HomeInformation from "src/contracts/HomeInformation";
+import Home from "src/contracts/HomeInformation";
 import HomeFetcher from 'src/contracts/HomeFetcher';
-import Status from "src/enums/Status";
+import StatusType from "src/enums/StatusType";
 import Realtor from "src/enums/Realtor";
+import Maps from 'src/services/Maps';
+
+interface LegacyHomeInformation {
+    address: string;
+    price: string;
+    status: StatusType;
+    url: string;
+    realtor: Realtor;
+}
 
 export default class WoongoedMakelaarsFetcher implements HomeFetcher {
-    async homes(browser: Browser): Promise<Array<HomeInformation>> {
-        const page = await browser.newPage();
 
-        let nextPageURL: string|null = 'https://www.woongoedmakelaars.nl/aanbod/woningaanbod/KRIMPEN%20AAN%20DEN%20IJSSEL/-325000/koop/provincie-Zuid-Holland/';
+    private maps: Maps;
+    private browser: Browser;
+    readonly url = 'https://www.woongoedmakelaars.nl/aanbod/woningaanbod/KRIMPEN%20AAN%20DEN%20IJSSEL/-325000/koop/provincie-Zuid-Holland/';
 
-        let homes: Array<HomeInformation> = [];
+    constructor(browser: Browser, maps: Maps) {
+        this.browser = browser;
+        this.maps = maps;
+    }
 
-        while (nextPageURL) {
+    public async homes(): Promise<Array<Home>> {
+        return this.enrich(
+            await this.scrapeHomes()
+        );
+    }
+
+    private async scrapeHomes(): Promise<Array<LegacyHomeInformation>> {
+        const page = await this.browser.newPage();
+
+        let nextPageURL: string | null = this.url;
+
+        let homes: Array<LegacyHomeInformation> = [];
+
+        while (nextPageURL !== null) {
             await page.goto(nextPageURL);
 
-            const homesOnCurrentPage: Array<HomeInformation> = await page.evaluate(this.getHomesFromPage);
+            const homesOnCurrentPage: Array<LegacyHomeInformation> = await page.evaluate(this.getHomesFromPage);
 
             homes = homes.concat(homesOnCurrentPage.map(home => {
-                home.status = this.parseStatus(home.status);
+                if (home.status !== null) {
+                    home.status = this.parseStatus(home.status);
+                } else {
+                    home.status = StatusType.Unknown;
+                }
 
                 return home;
             }));
 
             nextPageURL = await page.evaluate(() => {
-                const nextButton: HTMLAnchorElement|null = document.querySelector('.next-page a');
+                const nextButton: HTMLAnchorElement | null = document.querySelector('.next-page a');
 
                 if (!nextButton) {
                     return null;
@@ -39,38 +68,61 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
         return homes;
     }
 
-    getHomesFromPage(): Array<HomeInformation> {
+    private getHomesFromPage(): Array<LegacyHomeInformation> {
         return Array.from(document.querySelectorAll('.detailvak'))
-        .map(element => {
-            const banner = element.querySelector('.objectstatusbanner')
+            .map(element => {
+                const banner = element.querySelector('.objectstatusbanner')
 
-            if (banner && banner.textContent) {
-                status = banner.textContent.trim();
-            }
+                if (banner && banner.textContent) {
+                    status = banner.textContent.trim();
+                }
 
-            const home: HomeInformation = {
-                address: element.querySelector('.street-address').textContent.trim(),
-                price: element.querySelector('.price .kenmerkValue').textContent.trim(),
-                status: status as any,
-                url: (element.querySelector('.aanbodEntryLink') as HTMLAnchorElement).href,
-                realtor: Realtor.WoongoedMakelaars,
-            };
+                const home: LegacyHomeInformation = {
+                    address: element.querySelector('.street-address').textContent.trim(),
+                    price: element.querySelector('.price .kenmerkValue').textContent.trim(),
+                    status: status as any,
+                    url: (element.querySelector('.aanbodEntryLink') as HTMLAnchorElement).href,
+                    realtor: Realtor.WoongoedMakelaars,
+                };
 
-            return home;
-        });
+                return home;
+            });
     }
 
-    parseStatus(statusText: string | null): Status {
-        if (!statusText) {
-            return Status.Unknown;
-        } else if (statusText === 'Te koop' || statusText === 'Nieuw') {
-            return Status.Available;
+    private parseStatus(statusText: string): StatusType {
+        if (statusText === 'Te koop' || statusText === 'Nieuw') {
+            return StatusType.Available;
         } else if (statusText === 'Verkocht o.v.') {
-            return Status.SoldWithReservation;
+            return StatusType.SoldWithReservation;
         } else if (statusText === 'Verkocht') {
-            return Status.Sold;
+            return StatusType.Sold;
         } else if (statusText === 'Onder bod') {
-            return Status.UnderOffer;
+            return StatusType.BeingNegotiated;
+        } else {
+            return StatusType.Unknown;
         }
+    }
+
+    private async enrich(toEnrich: Array<LegacyHomeInformation>): Promise<Array<Home>> {
+        const enriched: Array<Home> = [];
+
+        for (const listing of toEnrich) {
+            const address = await this.maps.findAddress(listing.address);
+
+            enriched.push(Object.assign(new Home(), {
+                googlePlaceID: address.googlePlaceID,
+                street: address.street,
+                number: address.number,
+                city: address.city,
+                zipcode: address.zipcode,
+                price: listing.price,
+                status: listing.status,
+                previousStatusses: [],
+                url: listing.url,
+                realtor: Realtor.WoongoedMakelaars,
+            }));
+        }
+
+        return enriched;
     }
 }
