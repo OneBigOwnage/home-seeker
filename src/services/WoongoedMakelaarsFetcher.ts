@@ -77,8 +77,14 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
                     status = banner.textContent.trim();
                 }
 
+                const address = [
+                    element.querySelector('.street-address').textContent.trim(),
+                    element.querySelector('.postal-code').textContent.trim(),
+                    element.querySelector('.locality').textContent.trim(),
+                ].join(' ');
+
                 const home: LegacyHomeInformation = {
-                    address: element.querySelector('.street-address').textContent.trim(),
+                    address,
                     price: element.querySelector('.price .kenmerkValue').textContent.trim(),
                     status: status as any,
                     url: (element.querySelector('.aanbodEntryLink') as HTMLAnchorElement).href,
