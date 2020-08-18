@@ -24,7 +24,10 @@ export default class Maps {
             });
 
             if (searchResponse.data.results.length > 1) {
-                console.log(`We found ${searchResponse.data.results.length} houses but we're only processing the first one.`);
+                console.log(`We found ${searchResponse.data.results.length} places for [${query}] but we're only processing the first one:`);
+                searchResponse.data.results.forEach(p => console.log(`\t- Found: ${p.formatted_address}.`));
+            } else {
+
             }
 
             return searchResponse.data.results[0].place_id;
