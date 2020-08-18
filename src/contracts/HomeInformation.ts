@@ -1,5 +1,5 @@
-import StatusType from "src/enums/StatusType";
-import Realtor from "src/enums/Realtor";
+import StatusType from "../enums/StatusType";
+import Realtor from "../enums/Realtor";
 
 export interface Address {
     googlePlaceID: string;

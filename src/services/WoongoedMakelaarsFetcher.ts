@@ -1,9 +1,9 @@
 import { Browser } from "puppeteer";
-import Home from "src/contracts/HomeInformation";
-import HomeFetcher from 'src/contracts/HomeFetcher';
-import StatusType from "src/enums/StatusType";
-import Realtor from "src/enums/Realtor";
-import Maps from 'src/services/Maps';
+import Maps from "./Maps";
+import Realtor from "../enums/Realtor";
+import StatusType from "../enums/StatusType";
+import HomeFetcher from "../contracts/HomeFetcher";
+import Home from "../contracts/HomeInformation";
 
 interface LegacyHomeInformation {
     address: string;

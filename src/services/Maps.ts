@@ -1,5 +1,5 @@
 import { Client, AddressComponent, AddressType, GeocodingAddressComponentType } from '@googlemaps/google-maps-services-js';
-import { Address } from 'src/contracts/HomeInformation';
+import { Address } from '../contracts/HomeInformation';
 
 export default class Maps {
 

@@ -2,13 +2,10 @@ import * as puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
 import * as Redis from 'async-redis';
 
-// import WoongoedMakelaarsFetcher from 'src/services/WoongoedMakelaarsFetcher';
 
-import WhatsApp from 'src/services/WhatsApp';
+import WhatsApp from './services/WhatsApp';
 import Maps from './services/Maps';
 import WoongoedMakelaarsFetcher from './services/WoongoedMakelaarsFetcher';
-// import WoongoedMakelaarsFetcher from './services/WoongoedMakelaarsFetcher';
-
 
 dotenv.config();
 
@@ -30,6 +27,8 @@ dotenv.config();
     const fetcher = new WoongoedMakelaarsFetcher(browser, maps);
 
     console.log(await fetcher.homes());
+
+    await browser.close();
 })();
 
 
