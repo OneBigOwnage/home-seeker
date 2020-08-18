@@ -1,13 +1,37 @@
 import * as puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
 import * as Redis from 'async-redis';
-
+import { program } from 'commander';
 
 import WhatsApp from './services/WhatsApp';
 import Maps from './services/Maps';
 import WoongoedMakelaarsFetcher from './services/WoongoedMakelaarsFetcher';
 
 dotenv.config();
+
+
+program.command('scrape').description('Scrapes the web, saving all relevant information').action(async () => {
+    const maps = new Maps(process.env.GCP_API_KEY);
+    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
+    const fetcher = new WoongoedMakelaarsFetcher(browser, maps);
+
+    console.log(await fetcher.homes());
+
+    await browser.close();
+});
+
+
+program.command('add <phones...>').description('Add one of more phone numbers to the app').action( phones => console.log(phones));
+
+
+
+program.parse(process.argv);
+
+
+
+
+
+
 
 
 // const redis = Redis.createClient({ host: 'redis' });
@@ -18,18 +42,6 @@ dotenv.config();
 // redis.get('foo', Redis.print);
 
 // redis.quit();
-
-
-
-(async () => {
-    const maps = new Maps(process.env.GCP_API_KEY);
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
-    const fetcher = new WoongoedMakelaarsFetcher(browser, maps);
-
-    console.log(await fetcher.homes());
-
-    await browser.close();
-})();
 
 
 // (async () => {
