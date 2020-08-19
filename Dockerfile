@@ -14,4 +14,4 @@ RUN apt-get update \
 
 COPY . /app/
 
-RUN npm i -g typescript
+RUN npm i -g typescript typeorm
