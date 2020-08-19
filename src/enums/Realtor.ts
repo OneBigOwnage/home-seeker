@@ -1,5 +1,1 @@
-const enum Realtor {
-    WoongoedMakelaars = 'WoongoedMakelaars',
-}
-
-export default Realtor;
+export type Realtor = 'WoongoedMakelaars';
