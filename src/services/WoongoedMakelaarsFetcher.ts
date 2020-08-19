@@ -1,9 +1,9 @@
 import { Browser } from "puppeteer";
 import Maps from "./Maps";
-import Realtor from "../enums/Realtor";
-import StatusType from "../enums/StatusType";
+import { Realtor } from "../enums/Realtor";
 import HomeFetcher from "../contracts/HomeFetcher";
 import Home from "../contracts/HomeInformation";
+import { StatusType } from "../enums/StatusType";
 
 interface LegacyHomeInformation {
     address: string;
@@ -43,11 +43,7 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
             const homesOnCurrentPage: Array<LegacyHomeInformation> = await page.evaluate(this.getHomesFromPage);
 
             homes = homes.concat(homesOnCurrentPage.map(home => {
-                if (home.status !== null) {
-                    home.status = this.parseStatus(home.status);
-                } else {
-                    home.status = StatusType.Unknown;
-                }
+                home.status = this.parseStatus(home.status);
 
                 return home;
             }));
@@ -73,8 +69,12 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
             .map(element => {
                 const banner = element.querySelector('.objectstatusbanner')
 
+                let status: string | StatusType;
+
                 if (banner && banner.textContent) {
                     status = banner.textContent.trim();
+                } else {
+                    status = 'Unknown';
                 }
 
                 const address = [
@@ -88,7 +88,7 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
                     price: element.querySelector('.price .kenmerkValue').textContent.trim(),
                     status: status as any,
                     url: (element.querySelector('.aanbodEntryLink') as HTMLAnchorElement).href,
-                    realtor: Realtor.WoongoedMakelaars,
+                    realtor: 'WoongoedMakelaars',
                 };
 
                 return home;
@@ -97,15 +97,15 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
 
     private parseStatus(statusText: string): StatusType {
         if (statusText === 'Te koop' || statusText === 'Nieuw') {
-            return StatusType.Available;
+            return 'Available';
         } else if (statusText === 'Verkocht o.v.') {
-            return StatusType.SoldWithReservation;
+            return 'SoldWithReservation';
         } else if (statusText === 'Verkocht') {
-            return StatusType.Sold;
+            return 'Sold';
         } else if (statusText === 'Onder bod') {
-            return StatusType.BeingNegotiated;
+            return 'BeingNegotiated';
         } else {
-            return StatusType.Unknown;
+            return 'Unknown';
         }
     }
 
@@ -125,7 +125,7 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
                 status: listing.status,
                 previousStatusses: [],
                 url: listing.url,
-                realtor: Realtor.WoongoedMakelaars,
+                realtor: 'WoongoedMakelaars',
             }));
         }
 
