@@ -23,6 +23,7 @@ export interface RealtorObject {
     previousStatusses: Array<Status>;
 }
 
+export type PriceType = 'TransferTax' | 'RegisteredFreely';
 
 export default class Home implements Address, RealtorObject {
     googlePlaceID: string;
@@ -31,7 +32,7 @@ export default class Home implements Address, RealtorObject {
     city: string;
     zipcode: string;
     price: number;
-    priceType: 'TransferTax' | 'RegisteredFreely';
+    priceType: PriceType;
     status: StatusType;
     previousStatusses: Array<Status>;
     url: string;
