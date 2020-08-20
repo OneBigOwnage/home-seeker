@@ -25,6 +25,7 @@
     "commander": "^6.0.0",
     "dotenv": "^8.2.0",
     "inquirer": "^7.3.3",
+    "mysql": "^2.18.1",
     "puppeteer": "^5.2.1",
     "twilio": "^3.48.1",
     "typeorm": "^0.2.25"
