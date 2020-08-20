@@ -1,0 +1,9 @@
+default:
+    type: "mysql"
+    host: "db"
+    port: 3306
+    username: "root"
+    password: "root"
+    database: "db"
+    entities:
+      - 'build/entities/*.js'
