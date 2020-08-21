@@ -19,11 +19,15 @@
   },
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.1.4",
+    "@types/amqplib": "^0.5.13",
     "@types/async-redis": "^1.1.1",
+    "@types/pino": "^6.3.0",
+    "amqplib": "^0.6.0",
     "async-redis": "^1.1.7",
     "commander": "^6.0.0",
     "dotenv": "^8.2.0",
     "mysql": "^2.18.1",
+    "pino": "^6.5.1",
     "puppeteer": "^5.2.1",
     "twilio": "^3.48.1",
     "typeorm": "^0.2.25"
