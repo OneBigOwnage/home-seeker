@@ -118,18 +118,23 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
         for (const listing of toEnrich) {
             const address = await this.maps.findAddress(listing.address);
 
-            enriched.push(Object.assign(new Home(), {
+            const home: Home = {
                 googlePlaceID: address.googlePlaceID,
                 street: address.street,
                 number: address.number,
                 city: address.city,
                 zipcode: address.zipcode,
-                price: listing.price,
+                price: parseInt(/€\s(.*),-\s/.exec(listing.price)[1].replace('.', ''), 10),
+                priceType: listing.price.endsWith('k.k.') ? 'TransferTax' : 'RegisteredFreely',
                 status: listing.status,
                 previousStatusses: [],
                 url: listing.url,
                 realtor: 'WoongoedMakelaars',
-            }));
+            };
+
+            enriched.push(
+                Object.assign(new Home(), home)
+            );
         }
 
         return enriched;
