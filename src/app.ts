@@ -1,79 +1,71 @@
-import * as puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
-import * as Redis from 'async-redis';
 import { program } from 'commander';
 
-import WhatsApp from './services/WhatsApp';
-import Maps from './services/Maps';
-import WoongoedMakelaarsFetcher from './services/WoongoedMakelaarsFetcher';
+import Producer from './rabbit/Producer';
+import Consumer from './rabbit/Consumer';
+
+import scrape from './commands/Scrape';
+import filter from './commands/Filter';
+import register from './commands/Register';
+import experiment from './commands/Experiment';
 
 dotenv.config();
 
+const connectionString = `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
 
-program.command('scrape').description('Scrapes the web, saving all relevant information').action(async () => {
-    const maps = new Maps(process.env.GCP_API_KEY);
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox']});
-    const fetcher = new WoongoedMakelaarsFetcher(browser, maps);
+const exampleQueue = 'my-first-queue';
 
-    console.log(await fetcher.homes());
+program
+    .command('scrape')
+    .description('Scrapes the web, saving all relevant information')
+    .action(scrape);
 
-    await browser.close();
-});
+program
+    .command('consume')
+    .action(async () => {
+        const consumer = new Consumer(connectionString);
+
+        await consumer.connect(exampleQueue);
+        consumer.startConsuming(exampleQueue, console.log);
+    });
+
+program
+    .command('produce')
+    .action(async () => {
+        const producer = new Producer(connectionString);
+
+        await producer.connect(exampleQueue);
+
+        await producer.produce(exampleQueue, JSON.stringify({
+            key: 'value'
+        }));
+
+        producer.disconnect();
+    });
+
+program
+    .command('experiment')
+    .action(experiment);
+
+program
+    .command('filter')
+    .description('Process the scraped data and filter out any duplicates')
+    .action(filter);
 
 
-program.command('add <phones...>').description('Add one of more phone numbers to the app').action( phones => console.log(phones));
+program
+    .command('notify')
+    .description('Notify all users of home status updates')
+    .action(async () => {
+        // For every state-change that's consumed from bus
+        // Notify all users of the state-change via WhatsApp.
+    });
 
+
+program
+    .command('register <name> <phone>')
+    .description('Add a new user to the app by name and phone number.')
+    .action(register);
 
 
 program.parse(process.argv);
-
-
-
-
-
-
-
-
-// const redis = Redis.createClient({ host: 'redis' });
-
-// redis.on('error', console.error);
-
-// redis.set('foo', 'bar');
-// redis.get('foo', Redis.print);
-
-// redis.quit();
-
-
-// (async () => {
-//     const maps = new Maps(process.env.GCP_API_KEY);
-//     let placeID = await maps.findPlaceID('D albert schweitzer straat 18 Bergambacht');
-
-//     console.log(await maps.placeIDToAddress(placeID));
-// })();
-
-
-
-
-// (async () => {
-//     try {
-//         const browser = await puppeteer.launch({
-//             args: ['--no-sandbox', '--disable-setuid-sandbox']
-//         });
-
-//         const wgmFetcher = new WoongoedMakelaarsFetcher();
-//         const homes = await wgmFetcher.homes(browser);
-//         const whatsapp = new WhatsApp();
-
-//         for (let i = 0; i < homes.length; i++) {
-//             const house = homes[i];
-
-//             await whatsapp.message(`We found a new house with status [${house.status}]: ${house.address}.\nThe house is listed for ${house.price}.\nFind out more at: ${house.url}`);
-
-//             break;
-//         }
-
-//         await browser.close();
-//     } catch (error) {
-//         console.error('An error ocurred. More info below:\n\n', error);
-//     }
-// })();
