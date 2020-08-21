@@ -17,7 +17,8 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
 
     private maps: Maps;
     private browser: Browser;
-    readonly url = 'https://www.woongoedmakelaars.nl/aanbod/woningaanbod/KRIMPEN%20AAN%20DEN%20IJSSEL/-325000/koop/provincie-Zuid-Holland/';
+
+    readonly url = 'https://www.woongoedmakelaars.nl/aanbod/woningaanbod/';
 
     constructor(browser: Browser, maps: Maps) {
         this.browser = browser;
@@ -43,6 +44,8 @@ export default class WoongoedMakelaarsFetcher implements HomeFetcher {
             const homesOnCurrentPage: Array<LegacyHomeInformation> = await page.evaluate(this.getHomesFromPage);
 
             homes = homes.concat(homesOnCurrentPage.map(home => {
+                console.debug(`We found [${home.address}]`);
+
                 home.status = this.parseStatus(home.status);
 
                 return home;
