@@ -1,8 +1,8 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { PriceType } from '../contracts/HomeInformation';
-import { Status } from '@googlemaps/google-maps-services-js';
 import { StatusType } from '../enums/StatusType';
 import Realtor from './Realtor';
+import HomeStatus from './HomeStatus';
 
 @Entity()
 export default class Home extends BaseEntity {
@@ -10,7 +10,7 @@ export default class Home extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'text'})
+    @Column({ type: 'varchar', unique: true })
     googlePlaceID: string;
 
     @Column({ type: 'text'})
@@ -37,8 +37,9 @@ export default class Home extends BaseEntity {
     @Column({ type: 'text'})
     url: string;
 
-    @ManyToOne(type => Realtor, realtor => realtor.homes)
+    @ManyToOne(type => Realtor, realtor => realtor.homes, { nullable: false })
     realtor: Realtor;
 
-    previousStatusses: Array<Status>;
+    @OneToMany(type => HomeStatus, status => status.home)
+    previousStatusses: Array<HomeStatus>;
 }
