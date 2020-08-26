@@ -3,23 +3,17 @@ import database from "../db";
 import Home from "../entities/Home";
 import Realtor from "../entities/Realtor";
 import ScrapedHome from '../contracts/HomeInformation';
-import { performance } from "perf_hooks";
 import { QueryFailedError } from "typeorm";
-
-const scrapedHomesQueue = 'SCRAPED_HOMES';
-
-const connectionString = () => `amqp://${process.env.RABBIT_USERNAME}:${process.env.RABBIT_PASSWORD}@${process.env.RABBIT_HOST}:${process.env.RABBIT_PORT}`;
+import { rabbitConnectionString, SCRAPED_HOMES_QUEUE } from "../constants";
 
 const filter = async () => {
-    const consumer = new ConsumerService(connectionString());
+    const consumer = new ConsumerService(rabbitConnectionString());
 
-    await consumer.connect(scrapedHomesQueue);
+    await consumer.connect(SCRAPED_HOMES_QUEUE);
     const connection = await database();
 
-    consumer.startConsuming(scrapedHomesQueue, async message => {
-        // console.log(performance.now());
+    consumer.startConsuming(SCRAPED_HOMES_QUEUE, async message => {
 
-        // return;
         const scrapedHome = JSON.parse(message.content.toString()) as ScrapedHome;
 
         const exists: boolean = await Home.count({
@@ -36,10 +30,6 @@ const filter = async () => {
         const [queryResults, count] = await Realtor.findAndCount({
             where: { name: scrapedHome.realtor }
         });
-
-        // console.log(queryResults, count, count >= 1);
-
-        // process.exit(1);
 
         if (count >= 1) {
             realtor = queryResults.pop();
