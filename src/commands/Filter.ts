@@ -6,6 +6,48 @@ import ScrapedHome from '../contracts/HomeInformation';
 import { QueryFailedError } from "typeorm";
 import { rabbitConnectionString, SCRAPED_HOMES_QUEUE } from "../constants";
 
+const cachedRealtors: Array<Realtor> = [];
+
+const getRealtor = async (name: string) => {
+    let realtor: Realtor;
+
+    realtor = cachedRealtors.find(r => r.name === name);
+
+    if (realtor) {
+        return realtor;
+    }
+
+    const [queryResults, count] = await Realtor.findAndCount({
+        where: { name }
+    });
+
+    if (count >= 1) {
+        realtor = queryResults.pop();
+
+        cachedRealtors.push(realtor);
+
+        return realtor;
+    }
+
+    try {
+        realtor = await Realtor.create({ name }).save();
+        console.log(`Created realtor: ${realtor.name}`);
+    } catch (error) {
+        console.log('Wanted to create realtor, but it already exists.');
+
+        realtor = await Realtor.findOne({
+            where: { name }
+        });
+
+        console.log('The realtor that was found instead of created:', realtor);
+    } finally {
+        cachedRealtors.push(realtor);
+
+        return realtor;
+    }
+
+};
+
 const filter = async () => {
     const consumer = new ConsumerService(rabbitConnectionString());
 
@@ -25,28 +67,7 @@ const filter = async () => {
             return;
         }
 
-        let realtor: Realtor;
-
-        const [queryResults, count] = await Realtor.findAndCount({
-            where: { name: scrapedHome.realtor }
-        });
-
-        if (count >= 1) {
-            realtor = queryResults.pop();
-        } else {
-            try {
-                realtor = await Realtor.create({ name: scrapedHome.realtor }).save();
-                console.log(`Created realtor: ${realtor.name}`);
-            } catch (error) {
-                console.log('Wanted to create realtor, but it already exists.');
-
-                realtor = await Realtor.findOne({
-                    where: { name: scrapedHome.realtor }
-                });
-
-                console.log('The realtor that was found instead of created:', realtor);
-            }
-        }
+        const realtor: Realtor = await getRealtor(scrapedHome.realtor);
 
         await Home.create({
             googlePlaceID: scrapedHome.googlePlaceID,
